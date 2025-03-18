@@ -60,3 +60,45 @@ export const approveTask = async (req, res) => {
 };
 
 
+export const updateTaskByAssigner = async (req, res) => {
+    try {
+        const { userId, taskId } = req.params;
+        const { assignTo, status, priority, deadline } = req.body;
+
+    
+        const assigner = await User.findById(userId);
+        if (!assigner) {
+            return res.status(404).json({ message: "Assigner not found" });
+        }
+
+       
+        const task = await Task.findOne({ _id: taskId, assignBy: userId });
+        if (!task) {
+            return res.status(404).json({ message: "Task not found or unauthorized update" });
+        }
+
+       
+        if (assignTo) {
+            const newAssignee = await User.findById(assignTo);
+            if (!newAssignee) {
+                return res.status(404).json({ message: "New assignee not found" });
+            }
+            task.assignTo = assignTo; // Reassign task
+        }
+
+        
+        if (status) task.status = status;
+        if (priority) task.priority = priority;
+        if (deadline) task.deadline = deadline;
+
+        
+        await task.save();
+
+        return res.status(200).json({ message: "Task updated successfully", task });
+
+    } catch (err) {
+        console.error("Failed to update task", err);
+        return res.status(500).json({ message: "Internal Server Error", error: err.message });
+    }
+};
+
