@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import Profile from "../model/profile.js";
 import { uploadedFileOnCloudinary ,deleteFileFromCloudinary} from '../utils/cloudinary.js';
 
@@ -51,11 +52,11 @@ export const createProfile = async (req, res) => {
 
 export const updateProfile = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { tasks, leaves, aadhaarNumber } = req.body;
+        const { profileId } = req.params;
+        const { userId,tasks, leaves, aadhaarNumber } = req.body;
 
         // Validate userId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
+        if (!mongoose.Types.ObjectId.isValid(profileId)) {
             return res.status(400).json({ message: "Invalid userId" });
         }
 
@@ -84,8 +85,9 @@ export const updateProfile = async (req, res) => {
 
         // Find and update the profile
         const updatedProfile = await Profile.findOneAndUpdate(
-            { _id: userId },
+            { _id: profileId },
             {
+                userId,
                 tasks,
                 leaves,
                 profileImage: profileImageUrl || undefined,
@@ -112,10 +114,10 @@ export const updateProfile = async (req, res) => {
 
 export const deleteProfile = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { profileId } = req.params;
 
         // Find the profile first
-        const profile = await Profile.findById(userId);
+        const profile = await Profile.findById(profileId);
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
@@ -129,7 +131,7 @@ export const deleteProfile = async (req, res) => {
         }
 
         // Delete profile from the database
-        await Profile.findByIdAndDelete(userId);
+        await Profile.findByIdAndDelete(profileId);
 
         return res.status(200).json({ message: "Profile deleted successfully" });
     } catch (err) {
