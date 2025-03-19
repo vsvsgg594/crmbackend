@@ -1,9 +1,11 @@
 import User from "../model/user.js";
 import jwt from 'jsonwebtoken';
+import { uploadedFileOnCloudinary } from "../utils/cloudinary.js";
 
 export const addEmployee = async (req, res) => {
     try {
         const { name, email, password, phone, designation, joiningDate, department } = req.body;
+        const img = req.file ? req.file.filename : null;
 
         // Check for missing fields
         if (!name || !email || !password || !phone || !designation || !joiningDate || !department) {
@@ -27,6 +29,11 @@ export const addEmployee = async (req, res) => {
         if (existPhone) {
             return res.status(400).json({ message: "Phone number already exists" });
         }
+        let imageUrl = "";
+        if (req.file) {
+            // Upload image to Cloudinary
+            imageUrl = await uploadedFileOnCloudinary(req.file.path);
+        }
 
         // Create new user instance
         const newUser = new User({
@@ -36,7 +43,8 @@ export const addEmployee = async (req, res) => {
             phone,
             designation,
             department,
-            joiningDate: formattedDate
+            joiningDate: formattedDate,
+            img:imageUrl.secure_url
         });
 
         // Generate access and refresh tokens
