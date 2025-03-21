@@ -6,7 +6,7 @@ import {upload} from '../utils/multerConfiguration.js';
 const router=express.Router();
 router.post("/addUser", upload, addEmployee);
 
-router.put('/updateUser/:userId',updateUser);
+router.put('/updateUser/:userId',upload,updateUser);
 router.get("/findUser/:userId",findUserById);
 router.delete("/deleteUser/:userId",deleteUser);
 router.get("/getUser",getAllUser);

@@ -26,7 +26,8 @@ const fileFilter = (req, file, cb) => {
 const upload = multer({ storage, fileFilter }).fields([
     { name: "profileImage", maxCount: 1 },
     { name: "aadhaarImage", maxCount: 1 },
-    { name: "pdfFile", maxCount: 1 }  // Optional PDF upload
+    { name: "pdfFile", maxCount: 1 },  // Optional PDF upload
+    {name:"img",maxCount:1}
 ]);
 
 export { upload };

@@ -5,7 +5,7 @@ import { uploadedFileOnCloudinary } from "../utils/cloudinary.js";
 export const addEmployee = async (req, res) => {
     try {
         const { name, email, password, phone, designation, joiningDate, department } = req.body;
-        const img = req.file ? req.file.filename : null;
+        const img = req.files ? req.files.filename : null;
 
         // Check for missing fields
         if (!name || !email || !password || !phone || !designation || !joiningDate || !department) {
@@ -30,10 +30,11 @@ export const addEmployee = async (req, res) => {
             return res.status(400).json({ message: "Phone number already exists" });
         }
         let imageUrl = "";
-        if (req.file) {
-            // Upload image to Cloudinary
-            imageUrl = await uploadedFileOnCloudinary(req.file.path);
+        if (req.files && req.files.img) {  // Assuming 'img' is the field name
+            imageUrl = await uploadedFileOnCloudinary(req.files.img[0].path);
         }
+        
+
 
         // Create new user instance
         const newUser = new User({

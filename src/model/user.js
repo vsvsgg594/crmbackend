@@ -13,8 +13,8 @@ const userSchema = new mongoose.Schema({
   joiningDate: { type: Date, required: true },
   role: {
     type: String,
-    enum: ['emp', 'admin'],
-    default: 'emp'
+    enum: ['employee', 'admin'],
+    default: 'employee'
   },
   refreshToken: { type: String },
   isVerified: { type: Boolean, default: false },

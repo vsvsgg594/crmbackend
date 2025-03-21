@@ -48,14 +48,13 @@ export const createProfile = async (req, res) => {
 };
 
 
-
 export const updateProfile = async (req, res) => {
     try {
-        const { userId } = req.params;
-        const { tasks, leaves, aadhaarNumber } = req.body;
+        const { profileId } = req.params;
+        const { userId,tasks, leaves, aadhaarNumber } = req.body;
 
         // Validate userId
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
+        if (!mongoose.Types.ObjectId.isValid(profileId)) {
             return res.status(400).json({ message: "Invalid userId" });
         }
 
@@ -75,22 +74,23 @@ export const updateProfile = async (req, res) => {
         // Upload images if provided
         if (req.files?.profileImage?.[0]?.path) {
             const uploadedProfileImage = await uploadedFileOnCloudinary(req.files.profileImage[0].path);
-            profileImageUrl = uploadedProfileImage?.secure_url || "";
+            profileImageUrl = uploadedProfileImage?.secure_url;
         }
         if (req.files?.aadhaarImage?.[0]?.path) {
             const uploadedAadhaarImage = await uploadedFileOnCloudinary(req.files.aadhaarImage[0].path);
-            aadhaarImageUrl = uploadedAadhaarImage?.secure_url || "";
+            aadhaarImageUrl = uploadedAadhaarImage?.secure_url;
         }
 
         // Find and update the profile
         const updatedProfile = await Profile.findOneAndUpdate(
-            { _id: userId },
+            { _id: profileId },
             {
+                userId,
                 tasks,
                 leaves,
-                profileImage: profileImageUrl || undefined,
+                profileImage: profileImageUrl ,
                 aadhaarNumber,
-                aadhaarImage: aadhaarImageUrl || undefined,
+                aadhaarImage: aadhaarImageUrl ,
                 bankDetails,
                 socialLinks,
                 updatedAt: new Date(), // Update the timestamp
@@ -112,10 +112,10 @@ export const updateProfile = async (req, res) => {
 
 export const deleteProfile = async (req, res) => {
     try {
-        const { userId } = req.params;
+        const { profileId } = req.params;
 
         // Find the profile first
-        const profile = await Profile.findById(userId);
+        const profile = await Profile.findById(profileId);
         if (!profile) {
             return res.status(404).json({ message: "Profile not found" });
         }
@@ -129,7 +129,7 @@ export const deleteProfile = async (req, res) => {
         }
 
         // Delete profile from the database
-        await Profile.findByIdAndDelete(userId);
+        await Profile.findByIdAndDelete(profileId);
 
         return res.status(200).json({ message: "Profile deleted successfully" });
     } catch (err) {
@@ -137,5 +137,11 @@ export const deleteProfile = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: err.message });
     }
 };
+
+
+
+
+
+
 
 
