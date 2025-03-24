@@ -3,32 +3,49 @@ import User from '../model/user.js';
 import { findUserById } from "./userController.js";
 
 
-export const createTask=async(req,res)=>{
-    try{
-        const{title,des,assignTo,assignBy,status,priority,deadline}=req.body;
-        if(!title||!des||!status){
-            return res.status(401).json({message:"All fields are required"});
-        }
-        const assinser=await User.findOne({_id:assignBy});
-        const assign=await User.findOne({_id:assignTo});
-        if(!assinser){
-            return res.status(404).json({message:"Assigner not found"});
-        }
-        if(!assign){
-            return res.status(404).json({message:"Assign not found "})
-        }
-        const newTask=new Task({
-            title,des,assignTo,assignBy,status,priority,deadline
-        })
-      await newTask.save();
-      return res.status(200).json({message:"successfully create task",newTask});
+export const createTask = async (req, res) => {
+    try {
+        // Get assignBy from params
+        const { assignBy } = req.params;  
+        const { title, des, assignTo, status, priority, deadline } = req.body;
 
-    }catch(err){
-        console.log("failed to create task",err);
-        return res.status(400).json({message:"failed to create task",err});
+        // Check required fields
+        if (!title || !des || !status || !assignTo) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
+        // Find the assigner (assignBy) using empId
+        const assigner = await User.findOne({ empId: assignBy });
+        if (!assigner) {
+            return res.status(404).json({ message: "Assigner not found" });
+        }
+
+        // Find the assignee (assignTo) using empId
+        const assignee = await User.findOne({ empId: assignTo });
+        if (!assignee) {
+            return res.status(404).json({ message: "Assignee not found" });
+        }
+
+        // Create new task with MongoDB ObjectIds
+        const newTask = new Task({
+            title,
+            des,
+            assignTo: assignee._id,  // Store MongoDB ObjectId, NOT empId
+            assignBy: assigner._id,  // Store MongoDB ObjectId, NOT empId
+            status,
+            priority,
+            deadline
+        });
+
+        await newTask.save();
+        return res.status(201).json({ message: "Successfully created task", newTask });
+
+    } catch (err) {
+        console.error("Failed to create task", err);
+        return res.status(500).json({ message: "Failed to create task", error: err.message });
     }
-}
+};
+
 
 
 export const approveTask = async (req, res) => {

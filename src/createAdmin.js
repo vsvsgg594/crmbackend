@@ -3,7 +3,20 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import User from './model/user.js';
+const generateEmpId = async () => {
+    let empId;
+    let isUnique = false;
 
+    while (!isUnique) {
+        empId = `KBC${Math.floor(100000 + Math.random() * 900000)}`; // Generates a 6-digit random number
+        const existingUser = await User.findOne({ empId });
+        if (!existingUser) {
+            isUnique = true;
+        }
+    }
+
+    return empId;
+};
 const createAdmin = async () => {
     try {
         const conn = mongoose.connect(`${process.env.MONGO_DB_URL}`);
@@ -17,6 +30,7 @@ const createAdmin = async () => {
         const dateString = "20-03-2003";
         const [day, month, year] = dateString.split("-");
         const joiningDate = new Date(`${year}-${month}-${day}`);
+        const empId="";
 
 
         const existEmail = await User.findOne({ email });
@@ -25,6 +39,8 @@ const createAdmin = async () => {
             return;
 
         }
+        const finalEmpId = empId || (await generateEmpId());
+
         const adminUser = new User({
             name,
             email,
@@ -33,7 +49,8 @@ const createAdmin = async () => {
             designation,
             department,
             joiningDate,
-            role: "admin"
+            role: "admin",
+            empId:finalEmpId
         })
         await adminUser.save();
         console.log("admin create successfully ");
