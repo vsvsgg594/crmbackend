@@ -2,9 +2,25 @@ import User from "../model/user.js";
 import jwt from 'jsonwebtoken';
 import { uploadedFileOnCloudinary } from "../utils/cloudinary.js";
 
+const generateEmpId = async () => {
+    let empId;
+    let isUnique = false;
+
+    while (!isUnique) {
+        empId = `KBC${Math.floor(100000 + Math.random() * 900000)}`; // Generates a 6-digit random number
+        const existingUser = await User.findOne({ empId });
+        if (!existingUser) {
+            isUnique = true;
+        }
+    }
+
+    return empId;
+};
+
+
 export const addEmployee = async (req, res) => {
     try {
-        const { name, email, password, phone, designation, joiningDate, department } = req.body;
+        const { name, email, password, phone, designation, joiningDate, department, empId } = req.body;
         const img = req.files ? req.files.filename : null;
 
         // Check for missing fields
@@ -29,12 +45,14 @@ export const addEmployee = async (req, res) => {
         if (existPhone) {
             return res.status(400).json({ message: "Phone number already exists" });
         }
+
+        // Generate empId if not provided
+        const finalEmpId = empId || (await generateEmpId());
+
         let imageUrl = "";
         if (req.files && req.files.img) {  // Assuming 'img' is the field name
             imageUrl = await uploadedFileOnCloudinary(req.files.img[0].path);
         }
-        
-
 
         // Create new user instance
         const newUser = new User({
@@ -45,7 +63,8 @@ export const addEmployee = async (req, res) => {
             designation,
             department,
             joiningDate: formattedDate,
-            img:imageUrl.secure_url
+            img: imageUrl.secure_url || "",
+            empId: finalEmpId
         });
 
         // Generate access and refresh tokens

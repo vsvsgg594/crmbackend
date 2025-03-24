@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from 'jsonwebtoken';
+import crypto from "crypto";  // Import crypto for generating unique ID
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   phone: { type: String, required: true },
-  img: { type: String},
+  img: { type: String },
   designation: { type: String, required: true },
   department: { type: String, required: true },
   joiningDate: { type: Date, required: true },
@@ -18,6 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   refreshToken: { type: String },
   isVerified: { type: Boolean, default: false },
+  empId: { type: String, unique: true },  // New unique field
 }, { timestamps: true });
 
 // Hash password before saving
@@ -25,6 +27,14 @@ userSchema.pre('save', async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();  
+});
+
+// Generate a unique ID before saving
+userSchema.pre('save', async function (next) {
+  if (!this.empId) {
+    this.empId = crypto.randomUUID(); // Generates a unique ID
+  }
+  next();
 });
 
 // Validate password
