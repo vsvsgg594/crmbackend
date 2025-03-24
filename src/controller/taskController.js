@@ -119,3 +119,22 @@ export const updateTaskByAssigner = async (req, res) => {
     }
 };
 
+
+export const getAllTask = async (req, res) => {
+    try {
+        const tasks = await Task.find()
+            .populate("assignBy", "name email designation department phone")  // Fetch assigner's details
+            .populate("assignTo", "name email designation department phone")  // Fetch assignee's details
+            .exec();
+
+        if (!tasks || tasks.length === 0) {
+            return res.status(404).json({ message: "No tasks found" });
+        }
+
+        return res.status(200).json({ message: "Tasks retrieved successfully", tasks });
+    } catch (err) {
+        console.error("Failed to fetch tasks", err);
+        return res.status(500).json({ message: "Failed to fetch tasks", error: err.message });
+    }
+};
+
