@@ -10,7 +10,7 @@ export const createTask = async (req, res) => {
         const { title, des, assignTo, status, priority, deadline } = req.body;
 
         // Check required fields
-        if (!title || !des || !status || !assignTo) {
+        if (!title || !des || !status || !assignTo ||!deadline) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
