@@ -6,7 +6,7 @@ const taskShchema=mongoose.Schema({
     assignTo:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
     assignBy:{type:mongoose.Schema.Types.ObjectId,ref:'User',required:true},
     status:{type:String,enum:['pending','process','completed'],default:'pending'},
-    priority:{type:String,enum:['high','medium','low'],default:'high'},
+    priority:{type:String,enum:['high','medium','low'],default:'high', set: (v) => v.toLowerCase()},
     deadline:{type:Date},
     createdAt:{type:Date,default:Date.now},
     isAvaliable:{type:Boolean,default:false}
