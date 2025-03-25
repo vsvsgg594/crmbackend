@@ -97,20 +97,33 @@ export const updateUser = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Update user fields
+        // Extract fields from request body
         const { name, email, phone, designation, department, joiningDate } = req.body;
-        const img = req.files ? req.files.filename : null;
-        let imageUrl = "";
-        if (req.files && req.files.img) {  // Assuming 'img' is the field name
-            imageUrl = await uploadedFileOnCloudinary(req.files.img[0].path);
+
+        console.log("Received Files:", req.files); // Debugging line
+
+        let imageUrl = user.img; // Default to existing image
+
+        // Ensure req.files exists and has img
+        if (req.files && req.files.img) {  
+            const imgFile = Array.isArray(req.files.img) ? req.files.img[0] : req.files.img; // Handle both array and object cases
+            if (imgFile?.path) {
+                const uploadedImage = await uploadedFileOnCloudinary(imgFile.path);
+                if (uploadedImage?.secure_url) {
+                    imageUrl = uploadedImage.secure_url;
+                }
+            }
         }
 
+        // Update user fields
         if (name) user.name = name;
         if (email) user.email = email;
         if (phone) user.phone = phone;
         if (designation) user.designation = designation;
         if (department) user.department = department;
-        if(img) user.img=imageUrl.secure_url;
+        user.img = imageUrl; // Update or retain old image
+
+        // Handle joiningDate validation
         if (joiningDate) {
             const formattedDate = new Date(joiningDate.split("-").reverse().join("-"));
             if (isNaN(formattedDate.getTime())) {
@@ -129,6 +142,9 @@ export const updateUser = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+
+
+
 export const findUserById=async(req,res)=>{
     try{
         const{userId}=req.params;
