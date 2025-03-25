@@ -123,8 +123,8 @@ export const updateTaskByAssigner = async (req, res) => {
 export const getAllTask = async (req, res) => {
     try {
         const tasks = await Task.find()
-            .populate("assignBy", "name email designation department phone")  // Fetch assigner's details
-            .populate("assignTo", "name email designation department phone")  // Fetch assignee's details
+            .populate("assignBy", "name email designation department phone img ")  // Fetch assigner's details
+            .populate("assignTo", "name email designation department phone img")  // Fetch assignee's details
             .exec();
 
         if (!tasks || tasks.length === 0) {
@@ -154,11 +154,11 @@ export const findTaskByEmpId = async (req, res) => {
         const tasks = await Task.find({ assignTo: user._id })
             .populate({
                 path: "assignTo", 
-                select: "_id name email phone designation department"
+                select: "_id name email phone designation department img"
             })
             .populate({
                 path: "assignBy",
-                select: "_id name email phone designation department"
+                select: "_id name email phone designation department img"
             });
 
         // Step 3: Find tasks assigned **BY** this user & populate assignTo details
@@ -181,6 +181,36 @@ export const findTaskByEmpId = async (req, res) => {
     } catch (err) {
         console.error("Failed to find tasks", err);
         return res.status(500).json({ message: "Failed to fetch tasks by empId" });
+    }
+};
+
+export const markTaskAsCompleted = async (req, res) => {
+    try {
+        const { taskId } = req.params;
+        const { empId } = req.body; // Get the employee who is completing the task
+
+        // Find the user who is marking the task as completed
+        const user = await User.findOne({ empId });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Find the task by ID
+        const task = await Task.findById(taskId);
+        if (!task) {
+            return res.status(404).json({ message: "Task not found" });
+        }
+
+        // Update task status and store who completed it
+        task.status = "completed";
+        task.completedBy = user._id; // Storing the employee's ID who completed the task
+        await task.save();
+
+        return res.status(200).json({ message: "Task marked as completed successfully", task });
+
+    } catch (err) {
+        console.error("Failed to update task status", err);
+        return res.status(500).json({ message: "Failed to update task status" });
     }
 };
 

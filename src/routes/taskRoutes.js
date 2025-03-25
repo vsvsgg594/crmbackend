@@ -1,5 +1,5 @@
 import express from 'express';
-import {createTask,approveTask,updateTaskByAssigner,getAllTask,findTaskByEmpId}  from '../controller/taskController.js';
+import {createTask,approveTask,updateTaskByAssigner,getAllTask,findTaskByEmpId,markTaskAsCompleted}  from '../controller/taskController.js';
 const router =express.Router();
 
 
@@ -11,6 +11,7 @@ router.get("/tasks",getAllTask);
 
 
 router.get("/gettask/:empId",findTaskByEmpId);
+router.put("/completed/:taskId",markTaskAsCompleted);
 
 
 export default router;
