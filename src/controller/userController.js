@@ -99,12 +99,18 @@ export const updateUser = async (req, res) => {
 
         // Update user fields
         const { name, email, phone, designation, department, joiningDate } = req.body;
+        const img = req.files ? req.files.filename : null;
+        let imageUrl = "";
+        if (req.files && req.files.img) {  // Assuming 'img' is the field name
+            imageUrl = await uploadedFileOnCloudinary(req.files.img[0].path);
+        }
 
         if (name) user.name = name;
         if (email) user.email = email;
         if (phone) user.phone = phone;
         if (designation) user.designation = designation;
         if (department) user.department = department;
+        if(img) user.img=imageUrl.secure_url;
         if (joiningDate) {
             const formattedDate = new Date(joiningDate.split("-").reverse().join("-"));
             if (isNaN(formattedDate.getTime())) {
