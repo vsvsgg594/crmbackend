@@ -38,6 +38,11 @@ export const createTask = async (req, res) => {
         });
 
         await newTask.save();
+
+        // Populate assignBy and assignTo to get their image fields
+        const populatedTask = await Task.findById(newTask._id)
+            .populate("assignBy", "name image empId")  // Include name, image, empId
+            .populate("assignTo", "name image empId");
         return res.status(201).json({ message: "Successfully created task", newTask });
 
     } catch (err) {
@@ -184,33 +189,33 @@ export const findTaskByEmpId = async (req, res) => {
     }
 };
 
-export const markTaskAsCompleted = async (req, res) => {
-    try {
-        const { taskId } = req.params;
-        const { empId } = req.body; // Get the employee who is completing the task
+    export const markTaskAsCompleted = async (req, res) => {
+        try {
+            const { taskId } = req.params;
+            const { empId } = req.body; // Get the employee who is completing the task
 
-        // Find the user who is marking the task as completed
-        const user = await User.findOne({ empId });
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
+            // Find the user who is marking the task as completed
+            const user = await User.findOne({ empId });
+            if (!user) {
+                return res.status(404).json({ message: "User not found" });
+            }
+
+            // Find the task by ID
+            const task = await Task.findById(taskId);
+            if (!task) {
+                return res.status(404).json({ message: "Task not found" });
+            }
+
+            // Update task status and store who completed it
+            task.status = "completed";
+            task.completedBy = user._id; // Storing the employee's ID who completed the task
+            await task.save();
+
+            return res.status(200).json({ message: "Task marked as completed successfully", task });
+
+        } catch (err) {
+            console.error("Failed to update task status", err);
+            return res.status(500).json({ message: "Failed to update task status" });
         }
-
-        // Find the task by ID
-        const task = await Task.findById(taskId);
-        if (!task) {
-            return res.status(404).json({ message: "Task not found" });
-        }
-
-        // Update task status and store who completed it
-        task.status = "completed";
-        task.completedBy = user._id; // Storing the employee's ID who completed the task
-        await task.save();
-
-        return res.status(200).json({ message: "Task marked as completed successfully", task });
-
-    } catch (err) {
-        console.error("Failed to update task status", err);
-        return res.status(500).json({ message: "Failed to update task status" });
-    }
-};
+    };
 
