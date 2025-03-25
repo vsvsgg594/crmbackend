@@ -10,7 +10,7 @@ export const createTask = async (req, res) => {
         const { title, des, assignTo, status, priority, deadline } = req.body;
 
         // Check required fields
-        if (!title || !des || !status || !assignTo) {
+        if (!title || !des || !status || !assignTo ||!deadline) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -116,6 +116,25 @@ export const updateTaskByAssigner = async (req, res) => {
     } catch (err) {
         console.error("Failed to update task", err);
         return res.status(500).json({ message: "Internal Server Error", error: err.message });
+    }
+};
+
+
+export const getAllTask = async (req, res) => {
+    try {
+        const tasks = await Task.find()
+            .populate("assignBy", "name email designation department phone")  // Fetch assigner's details
+            .populate("assignTo", "name email designation department phone")  // Fetch assignee's details
+            .exec();
+
+        if (!tasks || tasks.length === 0) {
+            return res.status(404).json({ message: "No tasks found" });
+        }
+
+        return res.status(200).json({ message: "Tasks retrieved successfully", tasks });
+    } catch (err) {
+        console.error("Failed to fetch tasks", err);
+        return res.status(500).json({ message: "Failed to fetch tasks", error: err.message });
     }
 };
 
