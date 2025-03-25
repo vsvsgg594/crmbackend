@@ -1,6 +1,6 @@
 import Task from "../model/task.js";
 import User from '../model/user.js';
-import { findUserById } from "./userController.js";
+
 
 
 export const createTask = async (req, res) => {
@@ -135,6 +135,52 @@ export const getAllTask = async (req, res) => {
     } catch (err) {
         console.error("Failed to fetch tasks", err);
         return res.status(500).json({ message: "Failed to fetch tasks", error: err.message });
+    }
+};
+
+
+
+export const findTaskByEmpId = async (req, res) => {
+    try {
+        const { empId } = req.params;
+
+        // Step 1: Find the user with the given empId
+        const user = await User.findOne({ empId });
+        if (!user) {
+            return res.status(404).json({ message: `User with empId ${empId} not found` });
+        }
+
+        // Step 2: Find tasks assigned **TO** this user & populate assignBy details
+        const tasks = await Task.find({ assignTo: user._id })
+            .populate({
+                path: "assignTo", 
+                select: "_id name email phone designation department"
+            })
+            .populate({
+                path: "assignBy",
+                select: "_id name email phone designation department"
+            });
+
+        // Step 3: Find tasks assigned **BY** this user & populate assignTo details
+        const taskAssigner = await Task.find({ assignBy: user._id })
+            .populate({
+                path: "assignTo",
+                select: "_id name email phone designation department"
+            })
+            .populate({
+                path: "assignBy",
+                select: "_id name email phone designation department"
+            });
+
+        return res.status(200).json({
+            message: "Tasks retrieved successfully",
+            tasks,
+            taskAssigner
+        });
+
+    } catch (err) {
+        console.error("Failed to find tasks", err);
+        return res.status(500).json({ message: "Failed to fetch tasks by empId" });
     }
 };
 
