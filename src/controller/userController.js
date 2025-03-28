@@ -191,3 +191,20 @@ export const getAllUser = async (req, res) => {
         return res.status(500).json({ message: "Failed to fetch users" });
     }
 };
+
+export const findUserByEmpId=async(req,res)=>{
+    try{
+        const{empId}=req.params;
+
+        const user=await User.find({empId});
+        if(!user){
+            return res.status(404).json({message:"user not found"});
+        }
+        return res.status(200).json({message:"User found successfully",user});
+
+    }catch(err){
+        console.log("failed to fetch user",err);
+        return res.status(302).json({message:"failed to fetch user",err});
+
+    }
+}
