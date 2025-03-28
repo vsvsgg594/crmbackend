@@ -4,10 +4,10 @@ import Leave from "../model/leave.js";
 
 export const takeLeave = async (req, res) => {
     try {
-        const { userId, leaveType, startDate, endDate, reason } = req.body;
+        const { userId, leaveType, startDate, endDate, reason,empId } = req.body;
 
         // Validate required fields
-        if (!userId || !leaveType || !startDate || !endDate) {
+        if (!userId || !leaveType || !startDate || !endDate ||!empId) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -24,21 +24,11 @@ export const takeLeave = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        // Check for overlapping leave
-        const overlappingLeave = await Leave.findOne({
-            userId,
-            startDate: { $lte: new Date(endDate) },
-            endDate: { $gte: new Date(startDate) }
-        });
-        if (overlappingLeave) {
-            return res.status(400).json({ message: "You already have leave during this period." });
-        }
-
-        // Calculate totalDays
         const totalDays = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
-
+         const findUser=await User.findOne({empId});
+         console.log("user who take leave ",findUser);
         // Save new leave request
-        const newLeave = new Leave({ userId, leaveType, startDate, endDate, reason, totalDays });
+        const newLeave = new Leave({ userId, empId,leaveType, startDate, endDate, reason, totalDays });
         await newLeave.save();
 
         return res.status(200).json({ message: "Leave request submitted successfully", leave: newLeave, user });
@@ -54,10 +44,10 @@ export const takeLeave = async (req, res) => {
 
 export const handleLeaveRequest = async (req, res) => {
     try {
-        const { userId, status, adminComments } = req.body;
+        const { userId, status, adminComments,empId } = req.body;
 
         // Validate required fields
-        if (!userId || !status) {
+        if (!userId || !status||!empId) {
             return res.status(400).json({ message: "User ID and status are required" });
         }
 
@@ -66,15 +56,16 @@ export const handleLeaveRequest = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
+        
 
         // Find the latest leave record for the user
         const lastLeave = await Leave.findOne({ userId })
             .sort({ endDate: -1 }) // Get the latest leave by sorting endDate in descending order
             .select("endDate");
 
-        if (!lastLeave) {
-            return res.status(400).json({ message: "No previous leave records found. You can apply for leave." });
-        }
+        // if (!lastLeave) {
+        //     return res.status(400).json({ message: "No previous leave records found. You can apply for leave." });
+        // }
 
         // Calculate days since last leave ended
         const lastEndDate = new Date(lastLeave.endDate);
@@ -93,10 +84,13 @@ export const handleLeaveRequest = async (req, res) => {
             { status: "approved", adminComments }, // Update status & adminComments
             { new: true } // Return the updated leave request
         );
+        const findUserByEMpI=await User.findOne({empId});
+        console.log("emp ",findUserByEMpI);
 
         if (!leaveRequest) {
             return res.status(404).json({ message: "No pending leave request found for this user" });
         }
+
 
         return res.status(200).json({
             message: "Leave request approved successfully",
@@ -112,7 +106,7 @@ export const handleLeaveRequest = async (req, res) => {
 
 export const handleLeaveRequestReject=async(req,res)=>{
     try{
-        const{userId,status,adminComments}=req.body;
+        const{userId,status,adminComments,empId}=req.body;
         const users=await User.findOne({_id:userId});
         if(!users){
             return res.status(404).json({message:"User not found"});

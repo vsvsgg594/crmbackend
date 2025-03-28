@@ -11,3 +11,4 @@ router.get("/findUser/:userId",findUserById);
 router.delete("/deleteUser/:userId",deleteUser);
 router.get("/getUser",getAllUser);
 export default router;
+
