@@ -124,3 +124,42 @@ export const handleLeaveRequestReject=async(req,res)=>{
 
     }
 }
+
+export const getAllLeave=async(req,res)=>{
+    try{
+        const leaves=await Leave.find();
+        if(!leaves){
+            return res.status(404).json({message:"Leave Not Found"});
+        }
+        return res.status(200).json({message:"successfully fetch all leave",leaves});
+
+    }catch(err){
+        console.log("failed to fetch error",err);
+        return res.status(402).json({message:"failed to fecth error",err})
+
+    }
+}
+
+
+export const findLeaveByEmpId = async (req, res) => {
+    try {
+        const { empId } = req.params;
+
+        // Find the leave by empId
+        const leaveByEmpId = await Leave.findOne({ empId });
+        if (!leaveByEmpId) {
+            return res.status(404).json({ message: "Leave record not found" });
+        }
+
+        // Find the user who applied for leave using empId
+        const user = await User.findOne({ empId });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        return res.status(200).json({ leave: leaveByEmpId, user });
+    } catch (err) {
+        console.error("Error fetching leave and user:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+};
