@@ -12,7 +12,6 @@ const leaveSchema = new mongoose.Schema({
     startDate: { type: Date, required: true },  // Leave start date
     endDate: { type: Date, required: true },    // Leave end date
     totalDays: { type: Number, required: true }, // Automatically calculated
-    
     reason: { type: String, required: true },  // Reason for leave
     status: { 
         type: String, 
@@ -22,10 +21,9 @@ const leaveSchema = new mongoose.Schema({
     empId: { type: String, unique: true },
     
     adminComments: { type: String },  // Optional: Admin can add comments for rejection
-    
     appliedAt: { type: Date, default: Date.now },  // When leave was applied
     reviewedAt: { type: Date }  // When admin reviewed the request
-});
+}, {timestamps: true});
 
 // Pre-save middleware to calculate total leave days
 leaveSchema.pre("save", function (next) {
