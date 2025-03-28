@@ -4,10 +4,11 @@ import Leave from "../model/leave.js";
 
 export const takeLeave = async (req, res) => {
     try {
-        const { userId, leaveType, startDate, endDate, reason,empId } = req.body;
+        const{empId}=req.params;
+        const { userId, leaveType, startDate, endDate, reason } = req.body;
 
         // Validate required fields
-        if (!userId || !leaveType || !startDate || !endDate ||!empId) {
+        if (!userId || !leaveType || !startDate || !endDate ) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
@@ -44,10 +45,11 @@ export const takeLeave = async (req, res) => {
 
 export const handleLeaveRequest = async (req, res) => {
     try {
-        const { userId, status, adminComments,empId } = req.body;
+        const{empId}=req.params;
+        const { userId, status, adminComments } = req.body;
 
         // Validate required fields
-        if (!userId || !status||!empId) {
+        if (!userId || !status) {
             return res.status(400).json({ message: "User ID and status are required" });
         }
 
