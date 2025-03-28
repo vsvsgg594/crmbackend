@@ -127,20 +127,27 @@ export const handleLeaveRequestReject=async(req,res)=>{
     }
 }
 
-export const getAllLeave=async(req,res)=>{
-    try{
-        const leaves=await Leave.find();
-        if(!leaves){
-            return res.status(404).json({message:"Leave Not Found"});
-        }
-        return res.status(200).json({message:"successfully fetch all leave",leaves});
-
-    }catch(err){
-        console.log("failed to fetch error",err);
-        return res.status(402).json({message:"failed to fecth error",err})
-
+// In your leave controller
+export const getAllLeave = async (req, res) => {
+    try {
+      const leaves = await Leave.find().populate({
+        path: 'userId',
+        select: 'name department' // Only get these fields
+      });
+      
+      if (!leaves || leaves.length === 0) {
+        return res.status(404).json({ message: "No leaves found" });
+      }
+      
+      return res.status(200).json({ 
+        message: "Successfully fetched all leaves",
+        leaves 
+      });
+    } catch (err) {
+      console.error("Failed to fetch leaves:", err);
+      return res.status(500).json({ message: "Failed to fetch leaves", error: err.message });
     }
-}
+  };
 
 
 export const findLeaveByEmpId = async (req, res) => {

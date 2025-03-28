@@ -23,7 +23,7 @@ const leaveSchema = new mongoose.Schema({
     adminComments: { type: String },  // Optional: Admin can add comments for rejection
     appliedAt: { type: Date, default: Date.now },  // When leave was applied
     reviewedAt: { type: Date }  // When admin reviewed the request
-});
+}, {timestamps: true});
 
 // Pre-save middleware to calculate total leave days
 leaveSchema.pre("save", function (next) {
