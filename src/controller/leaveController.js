@@ -106,7 +106,7 @@ export const handleLeaveRequest = async (req, res) => {
 
 export const handleLeaveRequestReject=async(req,res)=>{
     try{
-        const{userId,status,adminComments}=req.body;
+        const{userId,status,adminComments,empId}=req.body;
         const users=await User.findOne({_id:userId});
         if(!users){
             return res.status(404).json({message:"User not found"});
