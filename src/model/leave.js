@@ -19,6 +19,7 @@ const leaveSchema = new mongoose.Schema({
         enum: ["pending", "approved", "rejected"], 
         default: "pending" 
     },
+    empId: { type: String, unique: true },
     
     adminComments: { type: String },  // Optional: Admin can add comments for rejection
     
