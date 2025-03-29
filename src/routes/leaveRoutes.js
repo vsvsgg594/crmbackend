@@ -10,3 +10,4 @@ router.get("/getAll",getAllLeave);
 router.get("/get/:empId",findLeaveByEmpId);
 
 export default router;
+    

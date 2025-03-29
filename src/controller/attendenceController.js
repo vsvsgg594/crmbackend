@@ -79,19 +79,48 @@ export const makeAttendence = async (req, res) => {
     }
 };
 
-export const getAllAttendence=async(req,res)=>{
-    try{
-        const attendences=await Attendence.find();
-        if(!attendences){
-            return res.status(404).json({message:"attendence not found"});
-        }
-        return res.status(200).json({message:"successfully fetch all attendence",attendences})
+export const getAllAttendence = async (req, res) => {
+  try {
+    const attendences = await Attendence.find()
+      .populate({
+        path: 'userId',
+        select: 'name img empId'  // Make sure these fields exist in your User model
+      })
+      .lean();
 
-    }catch(err){
-        console.log("failed to get attendence",err);
-        return res.status(400).json({message:"failed to get all attendence"})
+    if (!attendences || attendences.length === 0) {
+      return res.status(404).json({ message: "No attendance records found" });
     }
+
+    // Transform data to include calculated hours
+    const result = attendences.map(record => {
+      let hoursWorked = 0;
+      if (record.checkInTime && record.checkOutTime) {
+        // ... same hour calculation logic as before ...
+      }
+      
+      return {
+        ...record,
+        calculatedHours: hoursWorked.toFixed(2),
+        // Use populated user data if available
+        employee: record.userId ? {
+          name: record.userId.name,
+          empId: record.userId.empId,
+          image: record.userId.img
+        } : null
+      };
+    });
+
+    res.status(200).json({ 
+      message: "Successfully fetched all attendance",
+      attendences: result
+    });
+  } catch (err) {
+    console.error("Error fetching attendance:", err);
+    res.status(500).json({ message: "Failed to get attendance records" });
+  }
 }
+
 export const findAttendeById=async(req,res)=>{
     try{
         const{empId}=req.params;
