@@ -127,6 +127,7 @@ export const handleLeaveRequestReject=async(req,res)=>{
     }
 }
 
+<<<<<<< HEAD
 // In your leave controller
 export const getAllLeave = async (req, res) => {
     try {
@@ -146,6 +147,21 @@ export const getAllLeave = async (req, res) => {
     } catch (err) {
       console.error("Failed to fetch leaves:", err);
       return res.status(500).json({ message: "Failed to fetch leaves", error: err.message });
+=======
+export const getAllLeave=async(req,res)=>{
+    try{
+        const leaves=await Leave.find();
+        if(!leaves){
+            return res.status(404).json({message:"Leave Not Found"});
+        }
+       
+        return res.status(200).json({message:"successfully fetch all leave",leaves});
+
+    }catch(err){
+        console.log("failed to fetch error",err);
+        return res.status(402).json({message:"failed to fecth error",err})
+
+>>>>>>> 70d7c2e (updated code)
     }
   };
 
