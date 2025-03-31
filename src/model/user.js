@@ -19,7 +19,7 @@ const userSchema = new mongoose.Schema({
   },
   refreshToken: { type: String },
   isVerified: { type: Boolean, default: false },
-  empId: { type: String, unique: true },  // New unique field
+  empId: { type: String, required: true },  // New unique field
 }, { timestamps: true });
 
 // Hash password before saving

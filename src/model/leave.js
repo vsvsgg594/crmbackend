@@ -18,7 +18,7 @@ const leaveSchema = new mongoose.Schema({
         enum: ["pending", "approved", "rejected"], 
         default: "pending" 
     },
-    empId: { type: String, unique: true },
+    empId: { type: String, required: true },
     
     adminComments: { type: String },  // Optional: Admin can add comments for rejection
     appliedAt: { type: Date, default: Date.now },  // When leave was applied
