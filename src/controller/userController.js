@@ -1,5 +1,6 @@
 import User from "../model/user.js";
 import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
 import { uploadedFileOnCloudinary } from "../utils/cloudinary.js";
 
 const generateEmpId = async () => {
@@ -16,6 +17,17 @@ const generateEmpId = async () => {
 
     return empId;
 };
+
+const transporter=nodemailer.createTransport({
+    service:"gmail",
+    port:576,
+    host:"smtp.gmail.com",
+    secure:false,
+    auth:{
+        user:process.env.EMAIL,
+        pass:process.env.PASSWORD
+    }
+})
 
 
 export const addEmployee = async (req, res) => {
@@ -69,10 +81,34 @@ export const addEmployee = async (req, res) => {
 
         // Generate access and refresh tokens
         const { accessToken, refreshToken } = newUser.generateTokens();
+        const mailOptions={
+            from:process.env.EMAIL,
+            to:email,
+            subject:"Employee Account details",
+            html:`
+            <h2>Welcome to the Team, ${name}!</h2>
+                <p>Your employee account has been successfully created.</p>
+                <p>Here are your login credentials:</p>
+                <ul>
+                    <li><strong>Employee ID:</strong> ${finalEmpId}</li>
+                    <li><strong>Employee EMAIL:</strong>${email}</li>
+                    <li><strong>Password:</strong> ${password}</li>
+                    <li><strong>Designation:</strong> ${designation}</li>
+                    <li><strong>Department:</strong> ${department}</li>
+                    <li><strong>JoiningDate:</strong> ${joiningDate}</li>
+                </ul>
+                <p>Please keep this information secure and change your password after first login.</p>
+                <p>Best regards,</p>
+                <p>HR Team</p>
+            `
+
+            
+        }
 
         // Save user to the database
         newUser.refreshToken = refreshToken;
         await newUser.save();
+        await transporter.sendMail(mailOptions);
 
         return res.status(201).json({
             message: "Employee added successfully",

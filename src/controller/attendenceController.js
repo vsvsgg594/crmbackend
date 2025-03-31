@@ -79,12 +79,56 @@ export const makeAttendence = async (req, res) => {
     }
 };
 
+// export const getAllAttendence = async (req, res) => {
+//   try {
+//     const attendences = await Attendence.find()
+//       .populate({
+//         path: 'userId',
+//         select: 'name img empId'  // Make sure these fields exist in your User model
+//       })
+//       .lean();
+//       const empId=await Attendence.findOne({})
+
+
+//     if (!attendences || attendences.length === 0) {
+//       return res.status(404).json({ message: "No attendance records found" });
+//     }
+
+//     // Transform data to include calculated hours
+//     const result = attendences.map(record => {
+//       let hoursWorked = 0;
+//       if (record.checkInTime && record.checkOutTime) {
+//         // ... same hour calculation logic as before ...
+//       }
+      
+//       return {
+//         ...record,
+//         calculatedHours: hoursWorked.toFixed(2),
+//         // Use populated user data if available
+//         employee: record.userId ? {
+//           name: record.userId.name,
+//           empId: record.userId.empId,
+//           image: record.userId.img
+//         } : null
+//       };
+//     });
+
+//     res.status(200).json({ 
+//       message: "Successfully fetched all attendance",
+//       attendences: result
+//     });
+//   } catch (err) {
+//     console.error("Error fetching attendance:", err);
+//     res.status(500).json({ message: "Failed to get attendance records" });
+//   }
+// }
 export const getAllAttendence = async (req, res) => {
   try {
+    // Fetch all attendance records and populate user details
     const attendences = await Attendence.find()
       .populate({
-        path: 'userId',
-        select: 'name img empId'  // Make sure these fields exist in your User model
+        path: 'userId', // Assuming userId is a reference to the User model
+        select: 'name img empId'  // Select the fields you want from the User model
       })
       .lean();
 
@@ -93,23 +137,41 @@ export const getAllAttendence = async (req, res) => {
     }
 
     // Transform data to include calculated hours
-    const result = attendences.map(record => {
+    const result = await Promise.all(attendences.map(async (record) => {
       let hoursWorked = 0;
       if (record.checkInTime && record.checkOutTime) {
-        // ... same hour calculation logic as before ...
+        // Calculate hours worked
+        const checkIn = new Date(record.checkInTime);
+        const checkOut = new Date(record.checkOutTime);
+        const diff = (checkOut - checkIn) / (1000 * 60 * 60); // Difference in hours
+        hoursWorked = diff > 0 ? diff : 0; // Ensure non-negative
       }
-      
+
+      // If userId is populated, use it; otherwise, find user by empId
+      let employee = record.userId ? {
+        name: record.userId.name,
+        empId: record.userId.empId,
+        image: record.userId.img
+      } : null;
+
+      // If user is not populated, find user by empId
+      if (!employee) {
+        const user = await User.findOne({ empId: record.empId }).select('name img empId');
+        if (user) {
+          employee = {
+            name: user.name,
+            empId: user.empId,
+            image: user.img
+          };
+        }
+      }
+
       return {
         ...record,
         calculatedHours: hoursWorked.toFixed(2),
-        // Use populated user data if available
-        employee: record.userId ? {
-          name: record.userId.name,
-          empId: record.userId.empId,
-          image: record.userId.img
-        } : null
+        employee // Include employee details
       };
-    });
+    }));
 
     res.status(200).json({ 
       message: "Successfully fetched all attendance",
@@ -120,7 +182,6 @@ export const getAllAttendence = async (req, res) => {
     res.status(500).json({ message: "Failed to get attendance records" });
   }
 }
-
 export const findAttendeById=async(req,res)=>{
     try{
         const{empId}=req.params;

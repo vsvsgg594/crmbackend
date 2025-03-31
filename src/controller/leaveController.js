@@ -127,10 +127,6 @@ export const handleLeaveRequestReject=async(req,res)=>{
     }
 }
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 1a1a3bfb3aec94ce8a92f62952b455f65470dddd
 // In your leave controller
 export const getAllLeave = async (req, res) => {
     try {
