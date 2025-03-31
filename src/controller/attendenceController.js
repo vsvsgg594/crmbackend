@@ -314,39 +314,39 @@ export const findAttendeById = async (req, res) => {
 };
 
 export const checkOutAttendance = async (req, res) => {
-    try {
-        const { empId } = req.params;
-        
-        // Find today's attendance record
-        const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-        const attendance = await Attendence.findOne({ empId, date: { $gte: today } });
+  try {
+      const { empId } = req.params;
+      
+      // Find today's attendance record
+      const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+      const attendance = await Attendence.findOne({ empId, date: { $gte: today } });
 
-        if (!attendance) {
-            return res.status(404).json({ message: "No check-in record found for today" });
-        }
+      if (!attendance) {
+          return res.status(404).json({ message: "No check-in record found for today" });
+      }
 
-        const user=await User.findOne({empId});
-        if(!user){
+      const user = await User.findOne({ empId });
+      if (!user) {
+          return res.status(404).json({ message: "User  not found" });
+      }
 
-        }
+      // Set checkout time
+      const checkOutTime = new Date(); // Get the current date and time
+      const checkOutFormatted = checkOutTime.toISOString(); // Store in ISO format
 
-        // Set checkout time
-        const checkOutTime = new Date();
-        const checkOutFormatted = checkOutTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+      // Calculate total hours worked
+      const checkInTime = new Date(attendance.checkInTime);
+      const totalHours = ((checkOutTime - checkInTime) / (1000 * 60 * 60)).toFixed(2); // Convert ms to hours
 
-        // Calculate total hours worked
-        const checkInTime = new Date(attendance.checkInTime);
-        const totalHours = ((checkOutTime - checkInTime) / (1000 * 60 * 60)).toFixed(2); // Convert ms to hours
+      // Update attendance record
+      attendance.checkOutTime = checkOutFormatted; // Store the full ISO date-time
+      attendance.totalHours = totalHours; // Ensure this matches your field name
+      await attendance.save();
 
-        // Update attendance record
-        attendance.checkOutTime = checkOutFormatted;
-        attendance.totalhours = totalHours;
-        await attendance.save();
+      return res.status(200).json({ message: "Successfully checked out", attendance });
 
-        return res.status(200).json({ message: "Successfully checked out", attendance });
-
-    } catch (err) {
-        console.error("Failed to check out:", err);
-        return res.status(500).json({ message: "Failed to check out" });
-    }
+  } catch (err) {
+      console.error("Failed to check out:", err);
+      return res.status(500).json({ message: "Failed to check out" });
+  }
 };
