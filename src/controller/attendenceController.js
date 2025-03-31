@@ -1,5 +1,6 @@
 import Attendence from "../model/attendence.js";
 import User from '../model/user.js';
+import mongoose from "mongoose";
 
 // export const makeAttendence = async (req, res) => {
 //     try {
@@ -38,46 +39,115 @@ import User from '../model/user.js';
 //         return res.status(500).json({ message: "Failed to make attendance" });
 //     }
 // };
+// export const makeAttendence = async (req, res) => {
+//     try {
+//         const { empId } = req.params;
+//         const { latitude, longitude, image } = req.body; // Get latitude, longitude, and image from the request body
+//         const today = new Date().toISOString().split("T")[0]; // Get today's date
+
+//         const user = await User.findOne({ empId });
+//         if (!user) {
+//             return res.status(404).json({ message: "User  not found" });
+//         }
+
+//         let attendance = await Attendence.findOne({ empId, date: today });
+//             // If no record for today, create a new one
+//           attendance = new Attendence({
+//                 empId,
+//                 status: "present", // Default status is "present"
+//                 checkInTime: new Date().toISOString(),
+//                 date: today,
+//                 user,
+//                 image, // Store the image
+//                 location: JSON.stringify({ latitude, longitude }), // Store the location as a string
+//             });
+        
+//         //  else {
+//         //     // If record exists, update it
+//         //     attendance.status = "present"; // Update status
+//         //     attendance.checkInTime = new Date().toISOString();
+//         //     attendance.image = image; // Update the image if needed
+//         //     attendance.location = JSON.stringify({ latitude, longitude }); // Update the location if needed
+//         // }
+
+//         await attendance.save();
+//         return res.status(200).json({ message: "Attendance updated successfully", newAttendence: attendance, user });
+
+//     } catch (err) {
+//         console.error("Failed to make attendance:", err);
+//         return res.status(500).json({ message: "Failed to make attendance" });
+//     }
+// };
+// export const makeAttendence = async (req, res) => {
+//   try {
+//       const { empId } = req.params;
+//       const { latitude, longitude, image } = req.body; 
+//       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
+
+//       const user = await User.findOne({ empId });
+//       if (!user) {
+//           return res.status(404).json({ message: "User not found" });
+//       }
+
+//       // let attendance = await Attendence.findOne({ empId, date: today });
+
+     
+//           // If no record for today, create a new one
+//          const  attendance = new Attendence({
+//               empId,
+//               status: "present",
+//               checkInTime: new Date().toISOString(),
+//               date: today,
+//               userId: user._id, // ✅ Store userId reference properly
+//               image,
+//               location: JSON.stringify({ latitude, longitude }),
+//           });
+
+         
+      
+//       await attendance.save();
+//       return res.status(201).json({ message: "Attendance created successfully", attendance });
+//   } catch (err) {
+//       console.error("Failed to make attendance:", err);
+//       return res.status(500).json({ message: "Failed to make attendance" });
+//   }
+// };
 export const makeAttendence = async (req, res) => {
-    try {
-        const { empId } = req.params;
-        const { latitude, longitude, image } = req.body; // Get latitude, longitude, and image from the request body
-        const today = new Date().toISOString().split("T")[0]; // Get today's date
+  try {
+      const { empId } = req.params;
+      const { latitude, longitude, image } = req.body;
+      const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD format
 
-        const user = await User.findOne({ empId });
-        if (!user) {
-            return res.status(404).json({ message: "User  not found" });
-        }
+      const user = await User.findOne({ empId });
+      if (!user) {
+          return res.status(404).json({ message: "User not found" });
+      }
 
-        let attendance = await Attendence.findOne({ empId, date: today });
+      let attendance = await Attendence.findOne({ empId, date: today });
 
-        if (!attendance) {
-            // If no record for today, create a new one
-            attendance = new Attendence({
-                empId,
-                status: "present", // Default status is "present"
-                checkInTime: new Date().toISOString(),
-                date: today,
-                user,
-                image, // Store the image
-                location: JSON.stringify({ latitude, longitude }), // Store the location as a string
-            });
-        } else {
-            // If record exists, update it
-            attendance.status = "present"; // Update status
-            attendance.checkInTime = new Date().toISOString();
-            attendance.image = image; // Update the image if needed
-            attendance.location = JSON.stringify({ latitude, longitude }); // Update the location if needed
-        }
+      if (!attendance) {
+          // If no attendance record for today, create a new one
+          attendance = new Attendence({
+              empId,
+              status: "present",
+              checkInTime: new Date().toISOString(),
+              date: today,
+              userId: user._id,
+              image,
+              location: JSON.stringify({ latitude, longitude }),
+          });
+      } 
 
-        await attendance.save();
-        return res.status(200).json({ message: "Attendance updated successfully", newAttendence: attendance, user });
+      await attendance.save();
+      return res.status(201).json({ message: "Attendance updated successfully", attendance });
 
-    } catch (err) {
-        console.error("Failed to make attendance:", err);
-        return res.status(500).json({ message: "Failed to make attendance" });
-    }
+  } catch (err) {
+      console.error("Failed to make attendance:", err);
+      return res.status(500).json({ message: "Failed to make attendance" });
+  }
 };
+
+
 
 // export const getAllAttendence = async (req, res) => {
 //   try {
